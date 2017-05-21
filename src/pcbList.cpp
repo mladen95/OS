@@ -193,7 +193,7 @@ void PCBSleep::tickUpdate(){	//POZIVA SE U TIMERU
 			first = tek->next;
 			if (tek->sem!=0){
 				*(tek->r)=1;
-				//tek->sem->tickSignal();
+				tek->sem->tickSignal();
 				tek->sem->blockedList->removePCB(tek->pcb);
 			}
 			delete tek;
