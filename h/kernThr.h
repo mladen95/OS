@@ -5,6 +5,7 @@
 #include "pcb.h"
 #include <iostream.h>
 #include "pcbList.h"
+#include "semaphor.h"
 
 int userMain(int argc, char* argv[]);
 
@@ -25,6 +26,9 @@ public:
 		*ret = userMain(argc, argv);
 	}
 
+	virtual ~MainT(){
+		waitToComplete();
+	}
 };
 
 class IdleThread : public Thread {

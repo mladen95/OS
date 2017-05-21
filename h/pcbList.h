@@ -9,6 +9,7 @@ class KernelSem;
 class PCBList {
 public:
 	class Element {
+			friend class PCBAll;
 			friend class PCBList;
 			friend class PCBWaiting;
 			friend class PCBSleep;
@@ -44,7 +45,8 @@ public:
 
 
 class PCBAll : public PCBList {
-
+public:
+	virtual ~PCBAll();
 };
 
 class PCBWaiting : public PCBList {

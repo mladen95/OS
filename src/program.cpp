@@ -2,9 +2,10 @@
 #include "pcbList.h"
 #include "thread.h"
 #include "pcb.h"
-#include "ex.h"
 #include "intr.h"
 #include "kernThr.h"
+
+#include "SCHEDULE.H"
 
 
 int main(int argc, char* argv[]){
@@ -13,9 +14,9 @@ int main(int argc, char* argv[]){
 	MainT *tr = new MainT(8192,15,&i,argc,argv);
 	tr->start();
 	cout<<"\nKERNEL NIT START\n";
-	tr->waitToComplete();
+	delete tr;
 
 	restore();
-	cout<<"\nKERNEL NIT STOP\n";
+	cout<<"\nKERNEL NIT STOP\nPovratna vrednost: "<<i;
 	return i;
 }

@@ -27,6 +27,12 @@ void KernelSem::signal(){
 	unlock();
 }
 
+void KernelSem::tickSignal(){
+	lock();
+	val++;
+	unlock();
+}
+
 
 int KernelSem::wait(Time maxTimeToWait){
 	lock();

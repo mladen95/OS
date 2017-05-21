@@ -2,7 +2,6 @@
 #include "pcb.h"
 #include "pcbList.h"
 #include "kernThr.h"
-#include "ex.h"
 
 class PCB;
 
@@ -90,10 +89,10 @@ void tick();
 
 unsigned tbp, tsp, tss;
 void interrupt timer(){	// prekidna rutina
-	PCB::listSleep->tickUpdate();	//	SLEEP PCB LISTA - BUDJENJE PCB-OVA KOJIMA JE ISTEKAO SLEEP TIME
 	if (!zahtevana_promena_konteksta){
 		if (brojac>0)
 			brojac--;
+		PCB::listSleep->tickUpdate();	//	SLEEP PCB LISTA - BUDJENJE PCB-OVA KOJIMA JE ISTEKAO SLEEP TIME
 	}
 	if (brojac == 0 || zahtevana_promena_konteksta || PCB::running->status==5) {
 		if (locked==0){
@@ -163,5 +162,8 @@ void inic(){
 void restore(){
 	lock();
 	restoretimer();
+	delete PCB::listAll;
+	delete PCB::listSleep;
+	delete PCB::idleThread;
 	unlock();
 }

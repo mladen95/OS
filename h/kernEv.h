@@ -10,7 +10,6 @@ typedef void interrupt (*pInterrupt)(...);
 class KernelEv {
 public:
 
-	Event *myEvent;
 	volatile int value;
 	PCB *creator;
 	IVTNo ivtNo;

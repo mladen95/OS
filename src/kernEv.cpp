@@ -31,38 +31,34 @@ KernelEv::~KernelEv(){
 
 
 void KernelEv::signal(){
-	lock();
 	if (value==0){
-		if (creator->status != 2){
-			value=1;
-			unlock();
-		}
-		else {
-			creator->status = 1;
+		if (creator->status==2){
+			creator->status=1;
 			Scheduler::put(creator);
 			unlock();
 			dispatch();
+			//lock();
 		}
+		else{
+			value=1;
+			//unlock();
+		}
+
 	}
-	else
-		unlock();
 }
 
 void KernelEv::wait(){
-	lock();
 	if (creator == PCB::running){
 		if (value==1){
 			value=0;
-			unlock();
 		}
 		else {
 			creator->status = 2;
 			unlock();
 			dispatch();
+			//lock();
 		}
 	}
-	else
-		unlock();
 }
 
 

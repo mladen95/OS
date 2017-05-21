@@ -14,6 +14,7 @@ public:
 	KernelSem(Semaphore *sem, int init);
 	int wait(Time maxTimeToWait);
 	void signal();
+	void tickSignal();
 	int getVal();
 	~KernelSem();
 };

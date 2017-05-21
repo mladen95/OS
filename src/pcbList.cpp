@@ -78,7 +78,7 @@ void PCBList::ispis(){
 
 Thread* PCBList::getThread(ID id){
 	Element *tek = first;
-	while(tek!=0 || tek->pcb->getID()!=id)	tek = tek->next;
+	while(tek!=0 &&  tek->pcb->getID()!=id)	tek = tek->next;
 	if (tek!=0)
 		return tek->pcb->myThread;
 	return 0;
@@ -92,6 +92,19 @@ PCBList::~PCBList(){
 		first=first->next;
 		delete del;
 	}
+}
+
+
+PCBAll::~PCBAll(){
+	lock();
+	Element* del = first;
+	while(first!=0){
+		del = first;
+		first=first->next;
+		delete del->pcb;
+		delete del;
+	}
+	unlock();
 }
 
 
@@ -169,7 +182,7 @@ void PCBSleep::ispis(){
 }
 
 
-void PCBSleep::tickUpdate(){
+void PCBSleep::tickUpdate(){	//POZIVA SE U TIMERU
 	if (first!=0){
 		first->sleepTime--;
 		Element *tek = first;
@@ -180,6 +193,7 @@ void PCBSleep::tickUpdate(){
 			first = tek->next;
 			if (tek->sem!=0){
 				*(tek->r)=1;
+				//tek->sem->tickSignal();
 				tek->sem->blockedList->removePCB(tek->pcb);
 			}
 			delete tek;
@@ -253,7 +267,7 @@ void PCBBlocked::deblockS(){
 		p->status=1;
 		Scheduler::put(p);
 		if (del->sleepTime>0)
-			PCB::listSleep->removePCB(del->pcb);
+			PCB::listSleep->wakePCB(del->pcb);
 		delete del;
 	}
 	unlock();

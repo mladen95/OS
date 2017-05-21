@@ -38,16 +38,17 @@ PCB::PCB(Thread* t, StackSize stackSize, Time timeSlice){
 	status=0;
 	listWaiting = new PCBWaiting();
 	PCB::listAll->addNewPCB(this);
+	PCB::numberOfActive++;
 	unlock();
 }
 
 
 void PCB::wrapper(){
-	PCB::numberOfActive++;
 	PCB::running->myThread->run();
+	lock();
 	PCB::running->listWaiting->notifyAll();
-	PCB::numberOfActive--;
 	PCB::running->status = 4;
+	unlock();
 	dispatch();
 }
 
@@ -67,5 +68,6 @@ PCB::~PCB(){
 		delete[] stack;
 	delete listWaiting;
 	PCB::listAll->removePCB(this);
+	PCB::numberOfActive--;
 	unlock();
 }

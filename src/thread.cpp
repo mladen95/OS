@@ -52,7 +52,7 @@ ID Thread::getId(){
 }
 
 ID Thread::getRunningId(){
-	return PCB::running->myID;
+	return ((PCB*)(PCB::running))->getID();
 }
 
 Thread* Thread::getThreadById(ID id){
@@ -61,8 +61,8 @@ Thread* Thread::getThreadById(ID id){
 
 
 Thread::~Thread(){
-	lock();
 	waitToComplete();
+	lock();
 	delete myPCB;
 	unlock();
 }

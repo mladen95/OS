@@ -12,6 +12,7 @@ class PCB {
 private:
 	ID myID;
 public:
+
 	static volatile PCB* running;
 	static PCBAll* listAll;
 	static PCBSleep* listSleep;
