@@ -8,6 +8,8 @@ class PCB;
 volatile int zahtevana_promena_konteksta = 0;
 volatile int brojac=0;
 volatile unsigned int locked=0;
+// drugi zadatak
+volatile int deleteRunningThread=0;
 
 void lock(){
 	asm{
@@ -88,6 +90,7 @@ void restoretimer(){
 void tick();
 
 unsigned tbp, tsp, tss;
+PCB* PCBForDelete;
 void interrupt timer(){	// prekidna rutina
 	if (!zahtevana_promena_konteksta){
 		if (brojac>0)
@@ -108,10 +111,16 @@ void interrupt timer(){	// prekidna rutina
 				PCB::running->ss = tss;
 				PCB::running->bp = tbp;
 
+
 				if (PCB::running->status==1){
 					Scheduler::put((PCB*)PCB::running);
 
 				}
+				//DRUGI ZADATAK
+				if(deleteRunningThread==1){
+					PCBForDelete = (PCB*)PCB::running;
+				}
+				//KRAJ DRUGI ZADATAK
 
 
 				PCB::running = Scheduler::get();
@@ -129,6 +138,13 @@ void interrupt timer(){	// prekidna rutina
 					mov bp, tbp
 				}
 			#endif
+
+				//DRUGI ZADATAK
+				if(deleteRunningThread==1){
+					//delete PCBForDelete->myThread;
+					deleteRunningThread=0;
+				}
+				//KRAJ DRUGI ZADATAK
 		}
 	}
 

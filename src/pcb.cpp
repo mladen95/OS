@@ -1,7 +1,9 @@
 #include "pcb.h"
 #include <dos.h>
 #include "pcbList.h"
+#include "sigList.h"
 #include "intr.h"
+#include <iostream.h>
 
 
 
@@ -12,6 +14,20 @@ PCB* PCB::idleThread = 0;
 ID PCB::GEN_ID = 0;
 volatile int PCB::numberOfActive = 0;
 volatile int PCB::numberOfReady = 0;
+
+// DRUGI ZADATAK
+extern volatile int deleteRunningThread;
+
+int PCB::globalSignalStates[16] = {0};
+void zeroSignalFunction(){
+	PCB::running->listWaiting->notifyAll();
+	PCB::running->status = 4;
+	deleteRunningThread=1;
+	unlock();
+	dispatch();
+}
+SignalHandler PCB::defaultZeroSignal = zeroSignalFunction;
+// KRAJ DRUGI ZADATAK
 
 PCB::PCB(Thread* t, StackSize stackSize, Time timeSlice){
 	lock();
@@ -26,12 +42,23 @@ PCB::PCB(Thread* t, StackSize stackSize, Time timeSlice){
 	stack = new unsigned[stackSize];
 	stackSz = stackSize;
 
-	stack[stackSz-5] = 0x200;
+
 #ifndef BCC_BLOCK_IGNORE
+	stackBegin = FP_OFF(stack+stackSz);
+
 	stack[stackSz-6] = FP_SEG(PCB::wrapper);
 	stack[stackSz-7] = FP_OFF(PCB::wrapper);
-	sp = FP_OFF(stack+stackSz-16);
-	ss = FP_SEG(stack+stackSz-16);
+	//stack[stackSz-7] = FP_OFF(stack+stackSz-4);	// SACUVAN BP
+
+	stack[stackSz-8] = 0x200;
+	stack[stackSz-9] = FP_SEG(PCB::signalRoutine);
+	stack[stackSz-10] = FP_OFF(PCB::signalRoutine);
+
+	/*sp = FP_OFF(stack+stackSz-16);
+	ss = FP_SEG(stack+stackSz-16);*/
+	sp = FP_OFF(stack+stackSz-19);
+	ss = FP_SEG(stack+stackSz-19);
+	stack[stackSz-19] = FP_OFF(stack+stackSz-5);
 #endif
 	bp = sp;
 
@@ -39,6 +66,26 @@ PCB::PCB(Thread* t, StackSize stackSize, Time timeSlice){
 	listWaiting = new PCBWaiting();
 	PCB::listAll->addNewPCB(this);
 	PCB::numberOfActive++;
+
+	// DRUGI ZADATAK
+	owner = (PCB*)PCB::running;
+	if (owner == 0){
+		signalStates[0]=0;
+		handlers[0] = PCB::defaultZeroSignal;
+		for(int i=1; i<16; i++){
+			signalStates[i]=0;
+			handlers[i]=0;
+		}
+	}
+	else {
+		for(int i=0; i<16; i++){
+			signalStates[i] = owner->signalStates[i];
+			handlers[i] = owner->handlers[i];
+		}
+	}
+	signalsArrived = new SignalList();
+	runRoutine=1;
+	// KRAJ DRUGI ZADATAK
 	unlock();
 }
 
@@ -48,6 +95,11 @@ void PCB::wrapper(){
 	lock();
 	PCB::running->listWaiting->notifyAll();
 	PCB::running->status = 4;
+	if (PCB::running->owner!=0)	// SINGAL 1 - SLANJE KREATORU DA JE NIT ZAVRSILA
+		PCB::running->owner->myThread->signal(1);
+
+	PCB::running->signalsArrived->addSignal(2);		//	SIGNAL 2 - OBRADA SIGNALA
+	PCB::running->signalsArrived->signalRoutine();
 	unlock();
 	dispatch();
 }
@@ -70,4 +122,12 @@ PCB::~PCB(){
 	PCB::listAll->removePCB(this);
 	PCB::numberOfActive--;
 	unlock();
+}
+
+
+void PCB::signalRoutine(){
+
+	PCB::running->signalsArrived->signalRoutine();
+	PCB::running->runRoutine=0;
+
 }

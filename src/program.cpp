@@ -7,12 +7,16 @@
 
 #include "SCHEDULE.H"
 
-
+void funa(){
+		cout<<"ALLOOO";
+	}
 int main(int argc, char* argv[]){
 	inic();
 	int i;
 	MainT *tr = new MainT(8192,15,&i,argc,argv);
 	tr->start();
+	/*tr->registerHandler(5, funa);
+	tr->signal(5);*/
 	cout<<"\nKERNEL NIT START\n";
 	delete tr;
 
