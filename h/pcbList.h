@@ -41,12 +41,16 @@ public:
 	virtual void ispis();
 
 	virtual ~PCBList();
+
+
 };
 
 
 class PCBAll : public PCBList {
 public:
 	virtual ~PCBAll();
+	//DRUGI
+		void signalStateChangedUpdate();
 };
 
 class PCBWaiting : public PCBList {
@@ -71,6 +75,7 @@ public:
 	void addNewPCB(KernelSem *s, int *res, PCB *p, int sTime);
 	void deblockS();
 };
+
 
 
 

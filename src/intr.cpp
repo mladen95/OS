@@ -108,6 +108,7 @@ void interrupt timer(){	// prekidna rutina
 				PCB::running->ss = tss;
 				PCB::running->bp = tbp;
 
+
 				if (PCB::running->status==1){
 					Scheduler::put((PCB*)PCB::running);
 
@@ -165,5 +166,6 @@ void restore(){
 	delete PCB::listAll;
 	delete PCB::listSleep;
 	delete PCB::idleThread;
+	delete PCB::running;
 	unlock();
 }

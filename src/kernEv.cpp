@@ -1,6 +1,7 @@
 #include "kernEv.h"
 #include "intr.h"
 #include "pcb.h"
+#include "evList.h"
 #include "SCHEDULE.H"
 #include <dos.h>
 
@@ -10,6 +11,7 @@ IVTEntry* IVTEntry::entry[256] = {0};
 KernelEv::KernelEv(IVTNo ivtN){
 	lock();
 	creator = (PCB*)PCB::running;
+	PCB::running->myEvent = this;
 	value=0;
 	ivtNo = ivtN;
 	IVTEntry::event[ivtN] = this;
