@@ -11,6 +11,11 @@ const Time defaultTimeSlice = 2; // default = 2*55ms
 
 typedef int ID;
 
+//DODATAK ZA DRUGI ZADATAK
+typedef void (*SignalHandler)();
+typedef unsigned SignalId;
+//KRAJ DODATKA
+
 class PCB; // Kernel's implementation of a user's thread
 
 class Thread {
@@ -21,6 +26,21 @@ public:
 	ID getId();
 	static ID getRunningId();
 	static Thread * getThreadById(ID id);
+
+	// DODATAK ZA DRUGI ZADATAK
+	void signal(SignalId signal);
+	void registerHandler(SignalId signal, SignalHandler handler);
+	SignalHandler getHandler(SignalId signal);
+	void maskSignal(SignalId signal);
+	static void maskSignalGlobally(SignalId signal);
+	void unmaskSignal(SignalId signal);
+	static void unmaskSignalGlobally(SignalId signal);
+	void blockSignal(SignalId signal);
+	static void blockSignalGlobally(SignalId signal);
+	void unblockSignal(SignalId signal);
+	static void unblockSignalGlobally(SignalId signal);
+	static void pause();
+	// KRAJ DODATKA
 protected:
 	friend class PCB;
 	Thread (StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice);

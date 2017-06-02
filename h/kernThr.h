@@ -37,7 +37,7 @@ public:
 
 	}
 	void run(){
-		cout<<"IdleNIT";
+		//cout<<"IdleNIT";
 		while(PCB::numberOfActive>0){
 			//cout<<"Idle";
 			//PCB::listSleep->ispis();

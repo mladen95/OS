@@ -108,6 +108,17 @@ PCBAll::~PCBAll(){
 }
 
 
+void PCBAll::signalStateChangedUpdate(){
+	lock();
+	Element *tek = first;
+	while(tek!=0){
+		tek->pcb->signalStateChanged=1;
+		tek=tek->next;
+	}
+	unlock();
+}
+
+
 
 void PCBWaiting::notifyAll(){
 	lock();
@@ -115,7 +126,6 @@ void PCBWaiting::notifyAll(){
 	while(tek!=0){
 		tek->pcb->status=1;
 		Scheduler::put((PCB*)tek->pcb);
-		PCB::numberOfReady++;
 		tek = tek->next;
 	}
 	unlock();
@@ -189,7 +199,6 @@ void PCBSleep::tickUpdate(){	//POZIVA SE U TIMERU
 		while(tek->sleepTime==0 && tek!=0){
 			tek->pcb->status = 1;
 			Scheduler::put(tek->pcb);
-			PCB::numberOfReady++;
 			first = tek->next;
 			if (tek->sem!=0){
 				*(tek->r)=1;
