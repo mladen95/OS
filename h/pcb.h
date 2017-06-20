@@ -7,6 +7,13 @@
 class PCBAll;
 class PCBWaiting;
 class PCBSleep;
+class EvList;
+class SemList;
+class KernelEv;
+class KernelSem;
+// DODATAK ZA DRUGI ZADATAK
+class SignalList;
+// KRAJ DODATKA
 
 class PCB {
 private:
@@ -16,9 +23,23 @@ public:
 	static volatile PCB* running;
 	static PCBAll* listAll;
 	static PCBSleep* listSleep;
-	static PCB* idleThread;
+	static PCB* idleThread, *kernelPCB;
 	static ID GEN_ID;
-	static volatile int numberOfActive, numberOfReady;
+	static volatile int numberOfActive;
+
+	// DODATAK ZA DRUGI ZADATAK
+	static void signalRoutine();
+	static int globalSignalStates[16];
+	static SignalHandler defaultZeroSignal;
+	PCB* owner;
+	SignalHandler handlers[16];
+	int signalStates[16];		/*	0 - NEMASKIRAN		1 - BLOKIRAN	2 - MASKIRAN	*/
+	SignalList *signalsArrived;
+	volatile int runRoutine;	// DA LI JE UMETNUTA FUNKCIJA ZA OBRADU SVIH PRISTIGLIH SIGNALA
+	volatile int signalStateChanged;	// DA LI JE U MEDJUVREMENU PROMENJENO STANJE SIGNALA
+	// KRAJ DODATKA
+	KernelEv *myEvent;
+	KernelSem *sem;
 
 	unsigned sp;
 	unsigned ss;
@@ -35,6 +56,7 @@ public:
 	StackSize stackSz;
 	Thread *myThread;
 	PCBWaiting *listWaiting;
+	SemList *listSemaphore;
 
 	friend class Thread;
 

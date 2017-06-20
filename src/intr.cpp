@@ -2,6 +2,7 @@
 #include "pcb.h"
 #include "pcbList.h"
 #include "kernThr.h"
+#include "debug.h"
 
 class PCB;
 
@@ -108,6 +109,10 @@ void interrupt timer(){	// prekidna rutina
 				PCB::running->ss = tss;
 				PCB::running->bp = tbp;
 
+#ifdef DEBUG_THREAD
+		cout<<endl<<"NIT "<<((PCB*)PCB::running)->getID()<<" NAPUSTA KONTEKST";
+#endif
+
 				if (PCB::running->status==1){
 					Scheduler::put((PCB*)PCB::running);
 
@@ -129,6 +134,10 @@ void interrupt timer(){	// prekidna rutina
 					mov bp, tbp
 				}
 			#endif
+
+#ifdef DEBUG_THREAD
+		cout<<endl<<"NIT "<<((PCB*)PCB::running)->getID()<<" DOBIJA KONTEKST";
+#endif
 		}
 	}
 
@@ -151,8 +160,8 @@ void inic(){
 	inictimer();
 	PCB::listAll = new PCBAll();
 	PCB::listSleep = new PCBSleep();
-	PCB* m = new PCB(0, 4096, 0);
-	PCB::running = m;
+	PCB::kernelPCB = new PCB(0, 4096, 0);
+	PCB::running = PCB::kernelPCB;
 	IdleThread *idle = new IdleThread(4096, 0);
 	PCB::idleThread = PCB::getPCBById(idle->getId());
 	PCB::idleThread->status=5;
@@ -165,5 +174,7 @@ void restore(){
 	delete PCB::listAll;
 	delete PCB::listSleep;
 	delete PCB::idleThread;
+	delete PCB::running;
+	//delete PCB::kernelPCB;
 	unlock();
 }

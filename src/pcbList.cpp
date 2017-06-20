@@ -3,6 +3,7 @@
 #include "intr.h"
 #include "SCHEDULE.H"
 #include <iostream.h>
+#include "debug.h"
 
 class Element;
 
@@ -108,6 +109,17 @@ PCBAll::~PCBAll(){
 }
 
 
+void PCBAll::signalStateChangedUpdate(){
+	lock();
+	Element *tek = first;
+	while(tek!=0){
+		tek->pcb->signalStateChanged=1;
+		tek=tek->next;
+	}
+	unlock();
+}
+
+
 
 void PCBWaiting::notifyAll(){
 	lock();
@@ -115,7 +127,6 @@ void PCBWaiting::notifyAll(){
 	while(tek!=0){
 		tek->pcb->status=1;
 		Scheduler::put((PCB*)tek->pcb);
-		PCB::numberOfReady++;
 		tek = tek->next;
 	}
 	unlock();
@@ -189,12 +200,16 @@ void PCBSleep::tickUpdate(){	//POZIVA SE U TIMERU
 		while(tek->sleepTime==0 && tek!=0){
 			tek->pcb->status = 1;
 			Scheduler::put(tek->pcb);
-			PCB::numberOfReady++;
 			first = tek->next;
 			if (tek->sem!=0){
 				*(tek->r)=1;
 				tek->sem->tickSignal();
 				tek->sem->blockedList->removePCB(tek->pcb);
+#ifdef DEBUG_SEMAPHORE
+	lock();
+		cout<<endl<<"SEMAFOR: NIT "<<tek->pcb->getID()<<" JE ODBLOKIRANA SA SEMAFORA ("<<tek->sem<<")";
+	unlock();
+#endif
 			}
 			delete tek;
 			tek = first;
@@ -241,6 +256,7 @@ void PCBBlocked::addNewPCB(KernelSem *s, int *res, PCB *p, int sTime){
 	Element *newEl = new Element(p);
 	newEl->sleepTime = sTime;
 	newEl->r = res;
+	newEl->sem=s;
 	if (first==0){
 		first = newEl;
 		last = newEl;
@@ -268,6 +284,11 @@ void PCBBlocked::deblockS(){
 		Scheduler::put(p);
 		if (del->sleepTime>0)
 			PCB::listSleep->wakePCB(del->pcb);
+#ifdef DEBUG_SEMAPHORE
+	lock();
+		cout<<endl<<"SEMAFOR: NIT "<<p->getID()<<" JE ODBLOKIRANA SA SEMAFORA ("<<del->sem<<")";
+	unlock();
+#endif
 		delete del;
 	}
 	unlock();

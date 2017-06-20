@@ -1,8 +1,11 @@
 #include "kernEv.h"
 #include "intr.h"
 #include "pcb.h"
+#include "evList.h"
 #include "SCHEDULE.H"
 #include <dos.h>
+#include "debug.h"
+#include <iostream.h>
 
 KernelEv* IVTEntry::event[256] = {0};
 IVTEntry* IVTEntry::entry[256] = {0};
@@ -10,6 +13,7 @@ IVTEntry* IVTEntry::entry[256] = {0};
 KernelEv::KernelEv(IVTNo ivtN){
 	lock();
 	creator = (PCB*)PCB::running;
+	PCB::running->myEvent = this;
 	value=0;
 	ivtNo = ivtN;
 	IVTEntry::event[ivtN] = this;
@@ -37,11 +41,9 @@ void KernelEv::signal(){
 			Scheduler::put(creator);
 			unlock();
 			dispatch();
-			//lock();
 		}
 		else{
 			value=1;
-			//unlock();
 		}
 
 	}
@@ -54,9 +56,13 @@ void KernelEv::wait(){
 		}
 		else {
 			creator->status = 2;
+#ifdef DEBUG_EVENT
+	lock();
+		cout<<endl<<"DOGADJAJ: NIT "<<((PCB*)PCB::running)->getID()<<" SE BLOKIRALA NA DOGADJAJU ("<<(int)(this->ivtNo)<<")";
+	unlock();
+#endif
 			unlock();
 			dispatch();
-			//lock();
 		}
 	}
 }

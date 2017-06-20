@@ -1,7 +1,9 @@
 #include "kernSem.h"
 #include "intr.h"
 #include "thread.h"
+#include "semList.h"
 #include <iostream.h>
+#include "debug.h"
 
 extern int locked;
 
@@ -21,6 +23,7 @@ int KernelSem::getVal(){
 
 void KernelSem::signal(){
 	lock();
+	PCB::running->sem=0;
 	if (val++<0){
 		blockedList->deblockS();
 	}
@@ -36,10 +39,16 @@ void KernelSem::tickSignal(){
 
 int KernelSem::wait(Time maxTimeToWait){
 	lock();
+	PCB::running->sem=this;
 	if (--val<0){
 		int res=-1;
 		blockedList->addNewPCB(this, &res, (PCB*)PCB::running, maxTimeToWait);
 		PCB::running->status = 2;
+#ifdef DEBUG_SEMAPHORE
+	lock();
+		cout<<endl<<"SEMAFOR: NIT "<<((PCB*)PCB::running)->getID()<<" SE BLOKIRALA NA SEMAFORU ("<<this<<")";
+	unlock();
+#endif
 		unlock();	//VEC POSTOJI JEDAN LOCK U SEMAPHORE::WAIT
 		unlock();
 		dispatch();

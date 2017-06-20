@@ -188,6 +188,7 @@ int userMain (int argc, char* argv[])
 	if (N > 1) {
 		// Kill thread
 		pro[0]->signal(0);
+		Thread::pause();
 		signalTest.wait(0);
 	}
 #endif
